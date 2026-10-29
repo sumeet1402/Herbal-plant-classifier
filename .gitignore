@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+.ipynb_checkpoints/
+# Never store the downloaded dataset in Git history.
+data/
+# Store generated model weights as GitHub Release assets, not Git history.
+artifacts/*.pt
+!artifacts/.gitkeep
+# Generated results are added by the workflow using git add -f.
+results/*
+!results/.gitkeep

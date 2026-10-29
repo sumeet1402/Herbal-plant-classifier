@@ -1,0 +1,123 @@
+name: Train Herbal Plant Classifier
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "train.py"
+      - "app.py"
+      - "requirements.txt"
+      - ".github/workflows/train-herbal.yml"
+  workflow_dispatch:
+    inputs:
+      epochs:
+        description: "Training epochs"
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "3"
+          - "5"
+          - "8"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: herbal-training
+  cancel-in-progress: false
+
+jobs:
+  train:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      HERBAL_EPOCHS: ${{ github.event.inputs.epochs || '3' }}
+      HERBAL_BATCH_SIZE: "16"
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install CPU versions of PyTorch
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2,<3.0" "torchvision>=0.17,<1.0"
+
+      - name: Install remaining dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train and evaluate classifier
+        run: python train.py
+
+      - name: Verify generated outputs
+        run: |
+          test -s artifacts/best_model.pt
+          test -s results/metrics.json
+          test -s results/classification_report.csv
+          test -s results/training_history.csv
+          test -s results/training_curves.png
+          test -s results/confusion_matrix.png
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          metrics = json.loads(Path('results/metrics.json').read_text(encoding='utf-8'))
+          required = ['test_accuracy', 'test_macro_precision', 'test_macro_recall', 'test_macro_f1']
+          missing = [name for name in required if name not in metrics]
+          if missing:
+              raise SystemExit(f'Missing required evaluation metrics: {missing}')
+          print(json.dumps(metrics, indent=2))
+          PY
+
+      - name: Save reports as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: herbal-classifier-results
+          path: |
+            artifacts/best_model.pt
+            results/metrics.json
+            results/classification_report.csv
+            results/training_history.csv
+            results/training_curves.png
+            results/confusion_matrix.png
+          retention-days: 30
+
+      - name: Publish model and reports as GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: herbal-model-${{ github.run_id }}-${{ github.run_attempt }}
+          name: Herbal Plant Classifier — Run ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/best_model.pt
+            results/metrics.json
+            results/classification_report.csv
+            results/training_history.csv
+            results/training_curves.png
+            results/confusion_matrix.png
+          body: |
+            Automated Herbal Plant Classifier training run.
+            See metrics.json and classification_report.csv for held-out test results.
+            Educational classification demo only; not medical advice.
+
+      - name: Commit evaluation results to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f results/metrics.json results/classification_report.csv results/training_history.csv results/training_curves.png results/confusion_matrix.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish herbal classifier evaluation results [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "Evaluation results are unchanged."
+          fi
