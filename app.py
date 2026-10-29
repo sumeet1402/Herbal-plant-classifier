@@ -1,4 +1,4 @@
-"""Streamlit UI for the Herbal Plant Classifier with an educational plant guide."""
+﻿"""Streamlit UI for the Herbal Plant Classifier with an educational plant guide."""
 from __future__ import annotations
 
 import shutil
@@ -16,7 +16,7 @@ from plant_info import get_plant_info
 ROOT = Path(__file__).resolve().parent
 LOCAL_MODEL = ROOT / "artifacts" / "best_model.pt"
 MODEL_URL = (
-    "https://github.com/sumeet1402/herbal-plant-classifier/"
+    "https://github.com/sumeet1402/herbal-plant-classifier-with-info/"
     "releases/latest/download/best_model.pt"
 )
 IMAGE_SIZE = 224
@@ -25,7 +25,7 @@ IMAGENET_STD = (0.229, 0.224, 0.225)
 
 st.set_page_config(
     page_title="Herbal Plant Classifier",
-    page_icon="🌿",
+    page_icon="ðŸŒ¿",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -60,7 +60,7 @@ def resolve_model_path() -> Path:
         raise
 
 
-@st.cache_resource(show_spinner="Loading the trained classifier…")
+@st.cache_resource(show_spinner="Loading the trained classifierâ€¦")
 def load_classifier(model_path: str):
     checkpoint = torch.load(model_path, map_location="cpu", weights_only=True)
     class_names = checkpoint["class_names"]
@@ -80,8 +80,8 @@ def load_classifier(model_path: str):
 
 
 with st.sidebar:
-    st.title("🌿 Herbal AI")
-    st.caption("Computer vision · Transfer learning")
+    st.title("ðŸŒ¿ Herbal AI")
+    st.caption("Computer vision Â· Transfer learning")
     st.divider()
     st.subheader("About this model")
     st.write(
@@ -122,7 +122,7 @@ except Exception as exc:
 
 upload_col, result_col = st.columns([1, 1], gap="large")
 with upload_col:
-    st.subheader("1 · Upload an image")
+    st.subheader("1 Â· Upload an image")
     uploaded = st.file_uploader(
         "Choose a plant image",
         type=["jpg", "jpeg", "png"],
@@ -139,7 +139,7 @@ with upload_col:
         st.info("Your image preview will appear here after you upload a file.")
 
 with result_col:
-    st.subheader("2 · View prediction")
+    st.subheader("2 Â· View prediction")
     if uploaded is None:
         st.write("The predicted class and confidence scores will appear here.")
     else:
@@ -160,11 +160,11 @@ with result_col:
         st.write("**Top five classes**")
         for score, index in zip(scores.tolist(), indexes.tolist()):
             label = class_names[int(index)].replace("_", " ")
-            st.write(f"{label} · {score:.1%}")
+            st.write(f"{label} Â· {score:.1%}")
             st.progress(float(score))
 
         st.divider()
-        st.subheader("3 · About this plant")
+        st.subheader("3 Â· About this plant")
         plant = get_plant_info(predicted_class)
         st.write(f"**Common name:** {plant['common_name']}")
         if plant["botanical"]:
@@ -202,9 +202,10 @@ with st.expander("Model and evaluation details"):
     )
     st.markdown(
         "**Source code and model releases:** [GitHub repository]("
-        "https://github.com/sumeet1402/herbal-plant-classifier)."
+        "https://github.com/sumeet1402/herbal-plant-classifier-with-info)."
     )
     st.caption(
         "Plant guide entries are educational summaries and require independent verification. "
         "Common names may be region-specific and an image model cannot confirm the exact species."
     )
+
