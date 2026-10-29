@@ -1,4 +1,4 @@
-"""Streamlit UI for the Herbal Plant Classifier. No custom HTML is required."""
+"""Streamlit UI for the Herbal Plant Classifier with an educational plant guide."""
 from __future__ import annotations
 
 import shutil
@@ -10,6 +10,8 @@ import streamlit as st
 import torch
 from PIL import Image, UnidentifiedImageError
 from torchvision import models, transforms
+
+from plant_info import get_plant_info
 
 ROOT = Path(__file__).resolve().parent
 LOCAL_MODEL = ROOT / "artifacts" / "best_model.pt"
@@ -82,22 +84,28 @@ with st.sidebar:
     st.caption("Computer vision · Transfer learning")
     st.divider()
     st.subheader("About this model")
-    st.write("ResNet18 trained with transfer learning on the DIMPSAR medicinal plant image dataset.")
+    st.write(
+        "ResNet18 trained with transfer learning on the DIMPSAR medicinal plant image dataset."
+    )
     st.metric("Supported classes", "40")
-    st.metric("Recorded test accuracy", "93.86%")
-    st.caption("Result from the recorded held-out test split; performance can differ on new images.")
+    st.metric("Recorded test accuracy", "95.63%")
+    st.caption(
+        "Recorded on the held-out test split. Results can differ on new photos; this score is not a safety guarantee."
+    )
     st.divider()
     st.subheader("Responsible use")
     st.write(
         "This is an educational image-classification demo, not a botanical authority or medical tool. "
-        "Do not use its output to decide whether a plant is safe to eat, prepare, or use medicinally."
+        "Never use its prediction alone to decide whether a plant is safe to eat, touch, prepare, or use medicinally."
     )
 
 st.title("Herbal Plant Classifier")
 st.write(
-    "Upload a clear plant or leaf photo to see the model's most likely class and its top-five scores."
+    "Upload a clear plant or leaf photo to see the model's most likely class, top-five scores, and an educational plant guide."
 )
-st.caption("Best results usually come from a single, clearly visible plant or leaf with good lighting.")
+st.caption(
+    "Best results usually come from a single, clearly visible plant or leaf with good lighting."
+)
 
 try:
     model_path = resolve_model_path()
@@ -116,7 +124,9 @@ upload_col, result_col = st.columns([1, 1], gap="large")
 with upload_col:
     st.subheader("1 · Upload an image")
     uploaded = st.file_uploader(
-        "Choose a plant image", type=["jpg", "jpeg", "png"], help="JPG or PNG image files."
+        "Choose a plant image",
+        type=["jpg", "jpeg", "png"],
+        help="JPG or PNG image files.",
     )
     if uploaded is not None:
         try:
@@ -144,12 +154,38 @@ with result_col:
         st.success("Prediction generated")
         st.markdown(f"### {predicted_class.replace('_', ' ')}")
         st.metric("Top prediction score", f"{confidence:.1%}")
-        st.caption("This score is the model's relative confidence, not a guarantee of correctness.")
+        st.caption(
+            "This score is the model's relative confidence, not a guarantee of correctness."
+        )
         st.write("**Top five classes**")
         for score, index in zip(scores.tolist(), indexes.tolist()):
             label = class_names[int(index)].replace("_", " ")
             st.write(f"{label} · {score:.1%}")
             st.progress(float(score))
+
+        st.divider()
+        st.subheader("3 · About this plant")
+        plant = get_plant_info(predicted_class)
+        st.write(f"**Common name:** {plant['common_name']}")
+        if plant["botanical"]:
+            st.write(f"**Possible botanical name:** *{plant['botanical']}*")
+        st.write(plant["about"])
+
+        with st.expander("Traditional or reported uses", expanded=True):
+            st.write(plant["traditional_use"])
+        with st.expander("Food use: what should I know?", expanded=True):
+            st.write(plant["food_context"])
+        st.warning(f"**Safety caution:** {plant['safety']}")
+        st.error(
+            "Do not eat, brew, apply, or take a plant as medicine because of this AI result. "
+            "Confirm identity with a qualified local botanist and rely on a trusted food source. "
+            "The guide is educational and may not cover every species, plant part, or interaction."
+        )
+        if plant["source_url"]:
+            st.markdown(f"**Further reading:** [Open plant reference]({plant['source_url']})")
+        st.markdown(
+            f"**General plant-safety guidance:** [Poison Control plant guide]({plant['general_safety_url']})"
+        )
 
 st.divider()
 with st.expander("Model and evaluation details"):
@@ -159,6 +195,7 @@ with st.expander("Model and evaluation details"):
     val_acc = checkpoint.get("best_validation_accuracy")
     if val_acc is not None:
         st.write(f"**Best validation accuracy:** {float(val_acc):.2%}")
+    st.write("**Recorded test accuracy:** 95.63% (latest repository evaluation file).")
     st.markdown(
         "**Dataset:** [DIMPSAR Medicinal Plant Classification]("
         "https://huggingface.co/datasets/Project-AgML/DIMPSAR_medicinal_plant_classification)."
@@ -166,4 +203,8 @@ with st.expander("Model and evaluation details"):
     st.markdown(
         "**Source code and model releases:** [GitHub repository]("
         "https://github.com/sumeet1402/herbal-plant-classifier)."
+    )
+    st.caption(
+        "Plant guide entries are educational summaries and require independent verification. "
+        "Common names may be region-specific and an image model cannot confirm the exact species."
     )
