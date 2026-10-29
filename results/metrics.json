@@ -53,10 +53,10 @@
   "image_size": 224,
   "best_epoch": 8,
   "best_validation_accuracy": 0.9613445378151261,
-  "test_accuracy": 0.9562657695542472,
-  "test_macro_precision": 0.9576913014485298,
-  "test_macro_recall": 0.9557818229491429,
-  "test_macro_f1": 0.9549984072463008,
-  "elapsed_minutes": 29.04,
+  "test_accuracy": 0.9571068124474348,
+  "test_macro_precision": 0.9584221482227232,
+  "test_macro_recall": 0.9566438919146603,
+  "test_macro_f1": 0.9558827975979043,
+  "elapsed_minutes": 22.69,
   "device": "cpu"
 }
