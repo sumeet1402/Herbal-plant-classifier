@@ -3,11 +3,11 @@ name: Train Herbal Plant Classifier
 on:
   push:
     branches: [main]
+    # Inference UI edits don't need a full model retrain. Run training only
+    # when the training code or its Python dependencies change.
     paths:
       - "train.py"
-      - "app.py"
       - "requirements.txt"
-      - ".github/workflows/train-herbal.yml"
   workflow_dispatch:
     inputs:
       epochs:
@@ -67,7 +67,7 @@ jobs:
           test -s results/training_history.csv
           test -s results/training_curves.png
           test -s results/confusion_matrix.png
-          python - <<'PY'
+          python - <<'PYMETRICS'
           import json
           from pathlib import Path
           metrics = json.loads(Path('results/metrics.json').read_text(encoding='utf-8'))
@@ -76,7 +76,7 @@ jobs:
           if missing:
               raise SystemExit(f'Missing required evaluation metrics: {missing}')
           print(json.dumps(metrics, indent=2))
-          PY
+          PYMETRICS
 
       - name: Save reports as workflow artifacts
         uses: actions/upload-artifact@v4
@@ -117,7 +117,21 @@ jobs:
           git add -f results/metrics.json results/classification_report.csv results/training_history.csv results/training_curves.png results/confusion_matrix.png
           if ! git diff --cached --quiet; then
             git commit -m "Publish herbal classifier evaluation results [skip ci]"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            # Training takes time, so main may advance after checkout. Rebase
+            # results onto the newest main instead of trying to push a stale HEAD.
+            for attempt in 1 2 3; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              git rebase "origin/${GITHUB_REF_NAME}"
+              if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+                exit 0
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Push failed after 3 attempts."
+                exit 1
+              fi
+              echo "Remote branch advanced; retrying after rebase (attempt $((attempt + 1)))."
+              sleep 2
+            done
           else
             echo "Evaluation results are unchanged."
           fi

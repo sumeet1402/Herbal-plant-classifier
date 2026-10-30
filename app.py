@@ -1,6 +1,7 @@
-﻿"""Streamlit UI for the Herbal Plant Classifier with an educational plant guide."""
+"""Streamlit UI for the Herbal Plant Classifier with an educational plant guide."""
 from __future__ import annotations
 
+import json
 import shutil
 import tempfile
 import urllib.request
@@ -19,13 +20,25 @@ MODEL_URL = (
     "https://github.com/sumeet1402/herbal-plant-classifier-with-info/"
     "releases/latest/download/best_model.pt"
 )
+METRICS_PATH = ROOT / "results" / "metrics.json"
+
+def recorded_test_accuracy() -> str:
+    """Read the latest committed held-out test accuracy, when available."""
+    try:
+        metrics = json.loads(METRICS_PATH.read_text(encoding="utf-8"))
+        return f"{float(metrics['test_accuracy']):.2%}"
+    except (OSError, ValueError, KeyError, TypeError):
+        return "See evaluation report"
+
+TEST_ACCURACY_LABEL = recorded_test_accuracy()
+
 IMAGE_SIZE = 224
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
 st.set_page_config(
     page_title="Herbal Plant Classifier",
-    page_icon="ðŸŒ¿",
+    page_icon="🌿",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -36,7 +49,7 @@ def resolve_model_path() -> Path:
     if LOCAL_MODEL.is_file():
         return LOCAL_MODEL
 
-    cache_dir = Path(tempfile.gettempdir()) / "herbal-plant-classifier"
+    cache_dir = Path(tempfile.gettempdir()) / "herbal-plant-classifier-with-info"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cached_path = cache_dir / "best_model.pt"
     if cached_path.is_file() and cached_path.stat().st_size > 1_000_000:
@@ -60,7 +73,7 @@ def resolve_model_path() -> Path:
         raise
 
 
-@st.cache_resource(show_spinner="Loading the trained classifierâ€¦")
+@st.cache_resource(show_spinner="Loading the trained classifier…")
 def load_classifier(model_path: str):
     checkpoint = torch.load(model_path, map_location="cpu", weights_only=True)
     class_names = checkpoint["class_names"]
@@ -80,15 +93,15 @@ def load_classifier(model_path: str):
 
 
 with st.sidebar:
-    st.title("ðŸŒ¿ Herbal AI")
-    st.caption("Computer vision Â· Transfer learning")
+    st.title("🌿 Herbal AI")
+    st.caption("Computer vision · Transfer learning")
     st.divider()
     st.subheader("About this model")
     st.write(
         "ResNet18 trained with transfer learning on the DIMPSAR medicinal plant image dataset."
     )
     st.metric("Supported classes", "40")
-    st.metric("Recorded test accuracy", "95.63%")
+    st.metric("Recorded test accuracy", TEST_ACCURACY_LABEL)
     st.caption(
         "Recorded on the held-out test split. Results can differ on new photos; this score is not a safety guarantee."
     )
@@ -122,7 +135,7 @@ except Exception as exc:
 
 upload_col, result_col = st.columns([1, 1], gap="large")
 with upload_col:
-    st.subheader("1 Â· Upload an image")
+    st.subheader("1 · Upload an image")
     uploaded = st.file_uploader(
         "Choose a plant image",
         type=["jpg", "jpeg", "png"],
@@ -139,7 +152,7 @@ with upload_col:
         st.info("Your image preview will appear here after you upload a file.")
 
 with result_col:
-    st.subheader("2 Â· View prediction")
+    st.subheader("2 · View prediction")
     if uploaded is None:
         st.write("The predicted class and confidence scores will appear here.")
     else:
@@ -160,11 +173,11 @@ with result_col:
         st.write("**Top five classes**")
         for score, index in zip(scores.tolist(), indexes.tolist()):
             label = class_names[int(index)].replace("_", " ")
-            st.write(f"{label} Â· {score:.1%}")
+            st.write(f"{label} · {score:.1%}")
             st.progress(float(score))
 
         st.divider()
-        st.subheader("3 Â· About this plant")
+        st.subheader("3 · About this plant")
         plant = get_plant_info(predicted_class)
         st.write(f"**Common name:** {plant['common_name']}")
         if plant["botanical"]:
@@ -195,7 +208,7 @@ with st.expander("Model and evaluation details"):
     val_acc = checkpoint.get("best_validation_accuracy")
     if val_acc is not None:
         st.write(f"**Best validation accuracy:** {float(val_acc):.2%}")
-    st.write("**Recorded test accuracy:** 95.63% (latest repository evaluation file).")
+    st.write(f"**Recorded test accuracy:** {TEST_ACCURACY_LABEL} (from results/metrics.json when available).")
     st.markdown(
         "**Dataset:** [DIMPSAR Medicinal Plant Classification]("
         "https://huggingface.co/datasets/Project-AgML/DIMPSAR_medicinal_plant_classification)."
@@ -208,4 +221,3 @@ with st.expander("Model and evaluation details"):
         "Plant guide entries are educational summaries and require independent verification. "
         "Common names may be region-specific and an image model cannot confirm the exact species."
     )
-
