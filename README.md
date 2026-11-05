@@ -2,14 +2,18 @@
 
 **An end-to-end computer-vision project that classifies plant images into 40 dataset categories using PyTorch, transfer learning, ResNet18, and Streamlit.**
 
+## Try the Live Application
+
 <p align="center">
   <a href="https://herbal-plant-classifier-with-info-3n3ctc67frpfzijooubveq.streamlit.app/">
-    <img src="https://img.shields.io/badge/TRY_THE_LIVE_APP-Launch_Classifier-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Try the Live Herbal Plant Classifier">
+    <img src="https://img.shields.io/badge/%F0%9F%8C%BF%20LAUNCH%20LIVE%20CLASSIFIER-CLICK%20TO%20TRY-166534?style=for-the-badge&labelColor=052E16&logoColor=white" alt="Launch Live Herbal Plant Classifier">
   </a>
 </p>
 
 <p align="center">
-  <em>Upload a plant image and explore the classifier's predictions.</em>
+  <strong>Upload a plant image. Get an AI-powered prediction.</strong>
+  <br>
+  <em>Explore the interactive classifier directly in your browser.</em>
 </p>
 
 <p align="center">
@@ -26,6 +30,8 @@
     <img src="https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
   </a>
 </p>
+
+---
 
 ---
 
