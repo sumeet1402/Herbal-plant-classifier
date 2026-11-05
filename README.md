@@ -7,6 +7,37 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-ResNet18-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 
+# Herbal Plant Classifier
+
+**An end-to-end computer-vision project that classifies plant images into 40 dataset categories using PyTorch, transfer learning, ResNet18, and Streamlit.**
+
+<p align="center">
+  <a href="https://herbal-plant-classifier-with-info-3n3ctc67frpfzijooubveq.streamlit.app/">
+    <img src="https://img.shields.io/badge/TRY_THE_LIVE_APP-Launch_Classifier-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Try the Live Herbal Plant Classifier">
+  </a>
+</p>
+
+<p align="center">
+  <em>Upload a plant image and explore the classifier's predictions.</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/sumeet1402/herbal-plant-classifier/actions/workflows/train-herbal.yml/badge.svg">
+    <img src="https://github.com/sumeet1402/herbal-plant-classifier/actions/workflows/train-herbal.yml/badge.svg" alt="Training workflow">
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
+  </a>
+  <a href="https://pytorch.org/">
+    <img src="https://img.shields.io/badge/PyTorch-ResNet18-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch ResNet18">
+  </a>
+  <a href="https://streamlit.io/">
+    <img src="https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
+  </a>
+</p>
+
+---
+
 ## Overview
 
 This repository contains a reproducible image-classification pipeline based on the public [DIMPSAR Medicinal Plant Classification dataset](https://huggingface.co/datasets/Project-AgML/DIMPSAR_medicinal_plant_classification). The training workflow downloads the dataset, makes stratified train/validation/test splits, fine-tunes a pretrained ResNet18 network, evaluates the selected model on held-out images, publishes the model and reports as a GitHub Release, and commits evaluation files into `results/`.
