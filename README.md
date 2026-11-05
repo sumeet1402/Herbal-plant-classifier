@@ -1,12 +1,3 @@
-# 🌿 Herbal Plant Classifier
-
-**An end-to-end computer-vision project that classifies plant images into 40 dataset categories using PyTorch, transfer learning, ResNet18, and Streamlit.**
-
-[![Training workflow](https://github.com/sumeet1402/herbal-plant-classifier/actions/workflows/train-herbal.yml/badge.svg)](https://github.com/sumeet1402/herbal-plant-classifier/actions/workflows/train-herbal.yml)
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-ResNet18-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-
 # Herbal Plant Classifier
 
 **An end-to-end computer-vision project that classifies plant images into 40 dataset categories using PyTorch, transfer learning, ResNet18, and Streamlit.**
